@@ -16,11 +16,70 @@
 package com.example.android.fragmentexample
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Button
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var mButton: Button
+    private var isFragmentDisplayed = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mButton = findViewById<Button>(R.id.open_button)
+
+        if (savedInstanceState != null){
+            isFragmentDisplayed = savedInstanceState.getBoolean(STATE_FRAGMENT)
+            if (isFragmentDisplayed){
+                mButton.setText(R.string.close)
+            }
+        }
+
+        mButton.setOnClickListener {
+            if (!isFragmentDisplayed){
+                displayFragment()
+            } else {
+                closeFragment()
+            }
+        }
+
     }
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(STATE_FRAGMENT, isFragmentDisplayed)
+        super.onSaveInstanceState(outState)
+    }
+
+
+    fun displayFragment() {
+        val simpleFragment = SimpleFragment.newInstance()
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.add(R.id.fragment_container, simpleFragment).addToBackStack(null).commit()
+        mButton.setText(R.string.close)
+        isFragmentDisplayed = true
+    }
+
+
+    fun closeFragment(){
+        val fragmentManager = supportFragmentManager
+        val simpleFragment = fragmentManager.findFragmentById(R.id.fragment_container) as SimpleFragment?
+        if (simpleFragment != null){
+            val fragmentTransaction = fragmentManager.beginTransaction()
+            fragmentTransaction.remove(simpleFragment).commit()
+        }
+
+        mButton.setText(R.string.open)
+        isFragmentDisplayed = false
+    }
+
+
+    companion object {
+        const val STATE_FRAGMENT = "state_of_fragment"
+    }
+
+
 }
